@@ -1,0 +1,30 @@
+--Break Up Property Address
+WITH V1 AS (
+  SELECT 
+  UniqueID_, PropertyAddress, Address PropertyStreetAddress, SUBSTRING(PropertyAddress, LENGTH(Address)+3) PropertyCity 
+  FROM (SELECT
+      UniqueID_, PropertyAddress,
+      (split(PropertyAddress, ','))[safe_ordinal(1)] AS Address
+      FROM `my-first-sandbox-project-i.Data_Analytics_Cert_Capstone.Nashville Housing Date for 2013`) t1),
+
+--Breaking Up Owner Address
+
+V2 AS(
+  SELECT UniqueID_, t3.Address OwnerStreetAddress, City OwnerCity, SUBSTRING(t3.CityState, Length(City)+3) OwnerState
+  FROM (
+      SELECT UniqueID_, t2.Address, CityState, (split(CityState, ','))[safe_ordinal(1)] AS City 
+      FROM
+      (SELECT 
+      UniqueID_, Address, SUBSTRING (OwnerAddress, LENGTH(Address)+3) CityState
+      FROM (SELECT
+          UniqueID_, OwnerAddress,
+          (split(OwnerAddress, ','))[safe_ordinal(1)] AS Address
+          FROM `my-first-sandbox-project-i.Data_Analytics_Cert_Capstone.Nashville Housing Date for 2013`) t1)t2)t3)
+
+SELECT N.UniqueID_, N.ParcelID, N.LandUse, V1.PropertyStreetAddress, V1. PropertyCity, N.SaleDate, N.SalePrice, N.LegalReference, N.SoldAsVacant, N.OwnerName, V2.OwnerStreetAddress, V2.OwnerCity, V2.OwnerState
+FROM V1
+JOIN V2
+ON V1.UniqueID_ = V2.UniqueID_
+JOIN `my-first-sandbox-project-i.Data_Analytics_Cert_Capstone.Nashville Housing Date for 2013` N
+ON V1.UniqueID_ = N.UniqueID_ AND
+   V2.UniqueID_ = N.UniqueID_
